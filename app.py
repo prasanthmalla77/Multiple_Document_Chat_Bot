@@ -10,7 +10,10 @@ from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 
 # Define predefined documents
-predefined_documents = [r"C:\Users\91949\Downloads\Artisan Release Notes 2023-06-30.pdf", r"C:\Users\91949\Downloads\Artisan Release Notes 2023-06-30.pdf"]
+# Define predefined documents with custom names
+predefined_documents = [
+    {"name": "Document 1", "path": r"C:\Users\91949\Downloads\Artisan Release Notes 2023-06-30.pdf"},
+]
 
 
 def get_pdf_text(pdf_docs):
@@ -84,12 +87,13 @@ def main():
         st.subheader("Your documents")
 
         # Add a selectbox to choose predefined documents
-        selected_document = st.selectbox("Select a predefined document:", predefined_documents)
+        selected_document = st.selectbox("Select a document:", [doc["name"] for doc in predefined_documents])
 
         if st.button("Process"):
             with st.spinner("Processing"):
                 # Load the selected predefined document
-                pdf_docs = [selected_document]
+                selected_document_path = next(doc["path"] for doc in predefined_documents if doc["name"] == selected_document)
+                pdf_docs = [selected_document_path]
 
                 # get pdf text
                 raw_text = get_pdf_text(pdf_docs)
@@ -103,6 +107,10 @@ def main():
                 # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
                     vectorstore)
+
+                # Clear the text input
+                user_question = ""
+                st.session_state.chat_history = []  # Clear chat history
 
 
 if __name__ == '__main__':
